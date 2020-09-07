@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.NoticeMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Notice" >
+    <id column="id" property="id"  />
+    <result column="title" property="title" />
+    <result column="issuer_id" property="employee.id"  />
+    <result column="pubdate" property="pubDate" />
+    <result column="content" property="content" />
+<!--    <result column="read" property="read" />-->
+    <result column="e_name" property="employee.name"  />
+    <result column="e_id" property="employee.id"  />
+    <result column="ne_employee_id" property="noticeId"/>
+
+  </resultMap>
+
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.wolfcode.crm.domain.Notice" useGeneratedKeys="true">
+    insert into notice(issuer_id,pubdate,title,content)
+    values(#{employee.id},#{pubDate},#{title},#{content})
+  </insert>
+  <insert id="insertRelation">
+    insert into notice_employee(notice_id,employee_id) values(#{noticeId},#{employeeId})
+  </insert>
+  <update id="update" parameterType="cn.wolfcode.crm.domain.Notice" >
+    update notice  set issuer_id=#{employee.id} ,pubdate=#{pubDate}
+     ,title=#{title},content=#{content}
+     where id=#{id}
+  </update>
+
+  <delete id="delete">
+    delete from notice where id=#{id}
+  </delete>
+  <delete id="deleteRelation">
+    delete from notice_employee where  notice_id=#{id}
+  </delete>
+
+
+
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select n.id,n.issuer_id,n.title,n.pubdate,n.content
+    from  notice n
+  </select>
+
+  <select id="selectForList" resultMap="BaseResultMap">
+--    select n.id,n.issuer_id,n.title,n.pubdate,n.content,e.name as e_name
+--     from  notice n left join employee e on n.issuer_id=e.id
+
+   SELECT
+	n.id,
+	n.issuer_id,
+	n.title,
+	n.pubdate,
+	n.content,
+  e.id  AS e_id,
+	e. NAME AS e_name,
+	ne.notice_id as ne_notice_id,
+  ne.employee_id AS ne_employee_id
+FROM
+	notice n
+JOIN employee e ON n.issuer_id = e.id
+LEFT JOIN notice_employee ne ON n.id = ne.notice_id and ne.employee_id = #{id}
+  </select>
+    <select id="select" resultMap="BaseResultMap">
+        select n.id,n.issuer_id,n.title,n.pubdate,n.content,e.name as e_name
+    from  notice n left join employee e on n.issuer_id=e.id where n.id=#{id}
+    </select>
+
+  <select id="selectById" resultType="java.lang.Long">
+    select ne.employee_id from notice n
+     join notice_employee ne on n.id=ne.employee_id
+     where ne.notice_id=#{id};
+  </select>
+
+
+
+</mapper>
